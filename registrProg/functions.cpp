@@ -178,13 +178,18 @@ void deleteApartment(ApartmentList& aptList, size_t aptNumber) {
     printf("Квартира №%llu успешно удалена.\n", aptNumber);
 }
 
-void linkResidentToApartment(ApartmentList& aptList, size_t aptNumber, size_t resId) {
-    int idx = findApartmentIndex(aptList, aptNumber);
-    if (idx == -1) {
+void linkResidentToApartment(ApartmentList& aptList, const ResidentList& resList, size_t aptNumber, size_t resId) {
+    size_t resIdx = findResidentIndexById(resList.data, resList.count, resId);
+    if (resIdx == size_t(-1)) {
+        printf("Ошибка: Жилец с ID %llu не зарегистрирован в базе.\n", resId);
+        return;
+    }
+    size_t idx = findApartmentIndex(aptList, aptNumber);
+    if (idx == size_t(-1)) {
         printf("Ошибка: Квартира №%llu не найдена.\n", aptNumber);
         return;
     }
-    for (int j = 0; j < aptList.data[idx].residentCount; j++) {
+    for (size_t j = 0; j < aptList.data[idx].residentCount; j++) {
         if (aptList.data[idx].residentIds[j] == resId) {
             printf("Ошибка: Жилец с ID %llu уже заселен в квартиру №%llu.\n", resId, aptNumber);
             return;
@@ -196,7 +201,7 @@ void linkResidentToApartment(ApartmentList& aptList, size_t aptNumber, size_t re
         printf("Успех: Жилец с ID %llu заселен в квартиру №%llu.\n", resId, aptNumber);
     }
     else {
-        printf("Ошибка: В квартире №%llu нет мест! Максимум: %llu.\n", aptNumber, maxPerApt);
+        printf("Ошибка: В квартире №%llu нет мест! Максимум: %d.\n", aptNumber, maxPerApt);
     }
 }
 

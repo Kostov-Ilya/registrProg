@@ -23,7 +23,7 @@ void printAllResidents(const ResidentList& resList);
 #pragma region aparManagement
 void addApartment(ApartmentList& aptList);
 void deleteApartment(ApartmentList& aptList, size_t aptNumber);
-void linkResidentToApartment(ApartmentList& aptList, size_t aptNumber, size_t resId);
+void linkResidentToApartment(ApartmentList& aptList, const ResidentList& resList, size_t aptNumber, size_t resId);
 void unlinkResidentFromApartment(ApartmentList& aptList, size_t aptNumber, size_t resId);
 void printAllApartments(const ApartmentList& aptList);
 void printResidentsInApartment(size_t aptNumber, const ApartmentList& aptList, const ResidentList& resList);

@@ -52,8 +52,9 @@ int main() {
                 break;
             case 4:
                 printf("Номер квартиры: ");
-                if (scanf_s("%llu", &aNum) == 1)
+                if (scanf_s("%llu", &aNum) == 1) {
                     deleteApartment(aptList, aNum);
+                }
                 break;
             case 5:
                 printf("ID жильца: ");
