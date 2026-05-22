@@ -7,27 +7,27 @@
 
 #pragma region struct
 struct Resident {
-    int id;
+    size_t id;
     char fullName[nameBuffer];
 };
 
 struct Apartment {
-    int number;
-    int floor;
-    int roomsCount;
-    int residentIds[maxPerApt];
-    int residentCount;
+    size_t number;
+    size_t floor;
+    size_t roomsCount;
+    size_t residentIds[maxPerApt];
+    size_t residentCount;
 };
 
 struct ResidentList {
     Resident* data;
-    int count;
-    int capacity;
+    size_t count;
+    size_t capacity;
 };
 
 struct ApartmentList {
     Apartment* data;
-    int count;
-    int capacity;
+    size_t count;
+    size_t capacity;
 };
 #pragma endregion struct
