@@ -4,40 +4,62 @@
 #include "prototypes.h"
 #pragma endregion files
 
-typedef unsigned int unInt;
-
 #pragma region HelperFunctions
-static const Resident* findResidentById(const ResidentList& resList, int id) {
-    for (int i = 0; i < resList.count; i++) {
-        if (resList.data[i].id == id) {
-            return &resList.data[i];
+size_t findResidentIndexById(const Resident* const array, size_t count, size_t targetId) {
+    for (size_t i = 0; i < count; i++) {
+        if (array[i].id == targetId) {
+            return i;
         }
     }
-    return nullptr;
+    return size_t(-1);
 }
 
-static int findApartmentIndex(const ApartmentList& aptList, int targetNumber) {
-    for (int i = 0; i < aptList.count; i++) {
+static size_t findApartmentIndex(const ApartmentList& aptList, size_t targetNumber) {
+    for (size_t i = 0; i < aptList.count; i++) {
         if (aptList.data[i].number == targetNumber) {
             return i;
         }
     }
-    return -1;
+    return size_t(-1);
+}
+
+void growResidents(Resident*& arr, size_t* const capacity) {
+    size_t newCap = (*capacity) * 2;
+    Resident* newArr = new Resident[newCap];
+    for (size_t i = 0; i < *capacity; i++) {
+        newArr[i] = arr[i];
+    }
+    delete[] arr;
+    arr = newArr;
+    *capacity = newCap;
+}
+
+void growApartments(Apartment*& arr, size_t* const capacity) {
+    size_t newCap = (*capacity) * 2;
+    Apartment* newArr = new Apartment[newCap];
+    for (size_t i = 0; i < *capacity; i++) {
+        newArr[i] = arr[i];
+    }
+    delete[] arr;
+    arr = newArr;
+    *capacity = newCap;
 }
 #pragma endregion HelperFunctions
 
 #pragma region stringFunct
 int strCmp(const char* str1, const char* str2) {
-    int i = 0;
+    size_t i = 0;
     while (str1[i] != '\0' && str1[i] == str2[i]) {
         i++;
     }
-    if (str1[i] == str2[i]) return 0;
+    if (str1[i] == str2[i]) {
+        return 0;
+    }
     return (str1[i] > str2[i]) ? 1 : -1;
 }
 
-void copyString(char* const dest, const char* src, int bufferSize) {
-    int i = 0;
+void copyString(char* const dest, const char* src, size_t bufferSize) {
+    size_t i = 0;
     while (src[i] != '\0' && i < bufferSize - 1) {
         dest[i] = src[i];
         i++;
@@ -45,14 +67,14 @@ void copyString(char* const dest, const char* src, int bufferSize) {
     dest[i] = '\0';
 }
 
-void clearString(char* const str, int size) {
-    for (int i = 0; i < size; i++) {
+void clearString(char* const str, size_t size) {
+    for (size_t i = 0; i < size; i++) {
         str[i] = '\0';
     }
 }
 
-int stringLength(const char* str) {
-    int len = 0;
+size_t stringLength(const char* str) {
+    size_t len = 0;
     while (str[len] != '\0') {
         len++;
     }
@@ -63,24 +85,22 @@ int stringLength(const char* str) {
 #pragma region resManagement
 void addResident(ResidentList& resList) {
     if (resList.count >= resList.capacity) {
-        if (!growArray(resList.data, &resList.capacity)) {
-            return;
-        }
-        printf("Массив жильцов расширен до %d.\n", resList.capacity);
+        growResidents(resList.data, &resList.capacity);
+        printf("Массив жильцов расширен до %llu.\n", resList.capacity);
     }
     Resident newRes;
     printf("Введите ID нового жильца: ");
-    if (scanf_s("%d", &newRes.id) != 1) {
+    if (scanf_s("%llu", &newRes.id) != 1) {
         printf("Ошибка ввода ID!\n");
         return;
     }
     printf("Введите ФИО жильца: ");
-    if (scanf_s(" %[^\n]", newRes.fullName, (unInt)sizeof(newRes.fullName)) != 1) {
+    if (scanf_s(" %[^\n]", newRes.fullName, (size_t)sizeof(newRes.fullName)) != 1) {
         printf("Ошибка ввода ФИО!\n");
         return;
     }
-    if (findPerById(resList.data, resList.count, newRes.id) != -1) {
-        printf("Ошибка: Жилец с ID %d уже существует.\n", newRes.id);
+    if (findResidentIndexById(resList.data, resList.count, newRes.id) != size_t(-1)) {
+        printf("Ошибка: Жилец с ID %llu уже существует.\n", newRes.id);
         return;
     }
     resList.data[resList.count] = newRes;
@@ -88,17 +108,17 @@ void addResident(ResidentList& resList) {
     printf("Успех: Жилец добавлен!\n");
 }
 
-void deleteResident(ResidentList& resList, int rId) {
-    int indexToDelete = findPerById(resList.data, resList.count, rId);
-    if (indexToDelete == -1) {
-        printf("Ошибка: Жилец с ID %d не найден.\n", rId);
+void deleteResident(ResidentList& resList, size_t rId) {
+    size_t indexToDelete = findResidentIndexById(resList.data, resList.count, rId);
+    if (indexToDelete == size_t(-1)) {
+        printf("Ошибка: Жилец с ID %llu не найден.\n", rId);
         return;
     }
-    for (int i = indexToDelete; i < resList.count - 1; i++) {
+    for (size_t i = indexToDelete; i < resList.count - 1; i++) {
         resList.data[i] = resList.data[i + 1];
     }
     resList.count--;
-    printf("Жилец с ID %d успешно удален.\n", rId);
+    printf("Жилец с ID %llu успешно удален.\n", rId);
 }
 
 void printAllResidents(const ResidentList& resList) {
@@ -107,8 +127,8 @@ void printAllResidents(const ResidentList& resList) {
         return;
     }
     printf("\n--- СПИСОК ВСЕХ ЖИЛЬЦОВ ---\n");
-    for (int i = 0; i < resList.count; i++) {
-        printf("ID: %-5d | ФИО: %s\n", resList.data[i].id, resList.data[i].fullName);
+    for (size_t i = 0; i < resList.count; i++) {
+        printf("ID: %-5llu | ФИО: %s\n", resList.data[i].id, resList.data[i].fullName);
     }
 }
 #pragma endregion resManagement
@@ -116,88 +136,86 @@ void printAllResidents(const ResidentList& resList) {
 #pragma region aparManagement
 void addApartment(ApartmentList& aptList) {
     if (aptList.count >= aptList.capacity) {
-        if (!growArray(aptList.data, &aptList.capacity)) {
-            return;
-        }
-        printf("[i] Массив квартир расширен до %d.\n", aptList.capacity);
+        growApartments(aptList.data, &aptList.capacity);
+        printf("[i] Массив квартир расширен до %llu.\n", aptList.capacity);
     }
     Apartment newApt;
     printf("Введите номер квартиры: ");
-    if (scanf_s("%d", &newApt.number) != 1) {
+    if (scanf_s("%llu", &newApt.number) != 1) {
         printf("Ошибка ввода номера!\n");
         return;
     }
-    if (findApartmentIndex(aptList, newApt.number) != -1) {
-        printf("Ошибка: Квартира №%d уже существует.\n", newApt.number);
+    if (findApartmentIndex(aptList, newApt.number) != size_t(-1)) {
+        printf("Ошибка: Квартира №%llu уже существует.\n", newApt.number);
         return;
     }
     printf("Введите этаж: ");
-    if (scanf_s("%d", &newApt.floor) != 1) {
+    if (scanf_s("%llu", &newApt.floor) != 1) {
         printf("Ошибка ввода этажа!\n");
         return;
     }
     printf("Введите количество комнат: ");
-    if (scanf_s("%d", &newApt.roomsCount) != 1) {
+    if (scanf_s("%llu", &newApt.roomsCount) != 1) {
         printf("Ошибка ввода комнат!\n");
         return;
     }
     newApt.residentCount = 0;
     aptList.data[aptList.count] = newApt;
     aptList.count++;
-    printf("Успех: Квартира №%d добавлена.\n", newApt.number);
+    printf("Успех: Квартира №%llu добавлена.\n", newApt.number);
 }
 
-void deleteApartment(ApartmentList& aptList, int aptNumber) {
-    int indexToDelete = findApartmentIndex(aptList, aptNumber);
-    if (indexToDelete == -1) {
-        printf("Ошибка: Квартира №%d не найдена.\n", aptNumber);
+void deleteApartment(ApartmentList& aptList, size_t aptNumber) {
+    size_t indexToDelete = findApartmentIndex(aptList, aptNumber);
+    if (indexToDelete == size_t(-1)) {
+        printf("Ошибка: Квартира №%llu не найдена.\n", aptNumber);
         return;
     }
-    for (int i = indexToDelete; i < aptList.count - 1; i++) {
+    for (size_t i = indexToDelete; i < aptList.count - 1; i++) {
         aptList.data[i] = aptList.data[i + 1];
     }
     aptList.count--;
-    printf("Квартира №%d успешно удалена.\n", aptNumber);
+    printf("Квартира №%llu успешно удалена.\n", aptNumber);
 }
 
-void linkResidentToApartment(ApartmentList& aptList, int aptNumber, int resId) {
-    int idx = findApartmentIndex(aptList, aptNumber);
-    if (idx == -1) {
-        printf("Ошибка: Квартира №%d не найдена.\n", aptNumber);
+void linkResidentToApartment(ApartmentList& aptList, size_t aptNumber, size_t resId) {
+    size_t idx = findApartmentIndex(aptList, aptNumber);
+    if (idx == size_t(-1)) {
+        printf("Ошибка: Квартира №%llu не найдена.\n", aptNumber);
         return;
     }
     if (aptList.data[idx].residentCount < maxPerApt) {
         aptList.data[idx].residentIds[aptList.data[idx].residentCount] = resId;
         aptList.data[idx].residentCount++;
-        printf("Успех: Жилец с ID %d заселен в квартиру №%d.\n", resId, aptNumber);
+        printf("Успех: Жилец с ID %llu заселен в квартиру №%llu.\n", resId, aptNumber);
     }
     else {
-        printf("Ошибка: В квартире №%d нет мест! Максимум: %d.\n", aptNumber, maxPerApt);
+        printf("Ошибка: В квартире №%llu нет мест! Максимум: %d.\n", aptNumber, maxPerApt);
     }
 }
 
-void unlinkResidentFromApartment(ApartmentList& aptList, int aptNumber, int resId) {
-    int aptIdx = findApartmentIndex(aptList, aptNumber);
-    if (aptIdx == -1) {
-        printf("Ошибка: Квартира №%d не найдена.\n", aptNumber);
+void unlinkResidentFromApartment(ApartmentList& aptList, size_t aptNumber, size_t resId) {
+    size_t aptIdx = findApartmentIndex(aptList, aptNumber);
+    if (aptIdx == size_t(-1)) {
+        printf("Ошибка: Квартира №%llu не найдена.\n", aptNumber);
         return;
     }
-    int indexToDelete = -1;
-    for (int j = 0; j < aptList.data[aptIdx].residentCount; j++) {
+    size_t indexToDelete = size_t(-1);
+    for (size_t j = 0; j < aptList.data[aptIdx].residentCount; j++) {
         if (aptList.data[aptIdx].residentIds[j] == resId) {
             indexToDelete = j;
             break;
         }
     }
-    if (indexToDelete == -1) {
-        printf("Ошибка: Жилец с ID %d не найден в квартире №%d.\n", resId, aptNumber);
+    if (indexToDelete == size_t(-1)) {
+        printf("Ошибка: Жилец с ID %llu не найден в квартире №%llu.\n", resId, aptNumber);
         return;
     }
-    for (int j = indexToDelete; j < aptList.data[aptIdx].residentCount - 1; j++) {
+    for (size_t j = indexToDelete; j < aptList.data[aptIdx].residentCount - 1; j++) {
         aptList.data[aptIdx].residentIds[j] = aptList.data[aptIdx].residentIds[j + 1];
     }
     aptList.data[aptIdx].residentCount--;
-    printf("Успех: Жилец с ID %d откреплен от квартиры №%d.\n", resId, aptNumber);
+    printf("Успех: Жилец с ID %llu откреплен от квартиры №%llu.\n", resId, aptNumber);
 }
 
 void printAllApartments(const ApartmentList& aptList) {
@@ -206,67 +224,67 @@ void printAllApartments(const ApartmentList& aptList) {
         return;
     }
     printf("\n--- СПИСОК ВСЕХ КВАРТИР ---\n");
-    for (int i = 0; i < aptList.count; i++) {
-        printf("Квартира №%-4d | Этаж: %-2d | Комнат: %-2d | Жильцов: %d/%d\n",
+    for (size_t i = 0; i < aptList.count; i++) {
+        printf("Квартира №%-4llu | Этаж: %-2llu | Комнат: %-2llu | Жильцов: %llu/%d\n",
             aptList.data[i].number, aptList.data[i].floor, aptList.data[i].roomsCount,
             aptList.data[i].residentCount, maxPerApt);
     }
 }
 
-void printResidentsInApartment(int aptNumber, const ApartmentList& aptList, const ResidentList& resList) {
-    int idx = findApartmentIndex(aptList, aptNumber);
-    if (idx == -1) {
-        printf("Ошибка: Квартира №%d не найдена.\n", aptNumber);
+void printResidentsInApartment(size_t aptNumber, const ApartmentList& aptList, const ResidentList& resList) {
+    size_t idx = findApartmentIndex(aptList, aptNumber);
+    if (idx == size_t(-1)) {
+        printf("Ошибка: Квартира №%llu не найдена.\n", aptNumber);
         return;
     }
-    printf("\nЖильцы квартиры №%d (Этаж %d, Комнат: %d):\n",
+    printf("\nЖильцы квартиры №%llu (Этаж %llu, Комнат: %llu):\n",
         aptList.data[idx].number, aptList.data[idx].floor, aptList.data[idx].roomsCount);
     if (aptList.data[idx].residentCount == 0) {
         printf("  -- В этой квартире никто не зарегистрирован --\n");
     }
     else {
-        for (int j = 0; j < aptList.data[idx].residentCount; j++) {
-            int currentId = aptList.data[idx].residentIds[j];
-            const Resident* r = findResidentById(resList, currentId);
-            if (r != nullptr) {
-                printf("  -> ID: %d | %s\n", r->id, r->fullName);
+        for (size_t j = 0; j < aptList.data[idx].residentCount; j++) {
+            size_t currentId = aptList.data[idx].residentIds[j];
+            size_t resIdx = findResidentIndexById(resList.data, resList.count, currentId);
+            if (resIdx != size_t(-1)) {
+                printf("  -> ID: %llu | %s\n", resList.data[resIdx].id, resList.data[resIdx].fullName);
             }
             else {
-                printf("  -> ID: %d | <Данные жильца удалены>\n", currentId);
+                printf("  -> ID: %llu | <Данные жильца удалены>\n", currentId);
             }
         }
     }
 }
 
-void printApartmentsByFloor(const ApartmentList& aptList, int floor) {
-    printf("\n--- Квартиры на %d этаже ---\n", floor);
-    int foundCount = 0;
-    for (int i = 0; i < aptList.count; i++) {
+void printApartmentsByFloor(const ApartmentList& aptList, size_t floor) {
+    printf("\n--- Квартиры на %llu этаже ---\n", floor);
+    size_t foundCount = 0;
+    for (size_t i = 0; i < aptList.count; i++) {
         if (aptList.data[i].floor == floor) {
-            printf("Квартира №%d (%d-комнатная, Жильцов: %d/%d)\n",
+            printf("Квартира №%llu (%llu-комнатная, Жильцов: %llu/%d)\n",
                 aptList.data[i].number, aptList.data[i].roomsCount,
                 aptList.data[i].residentCount, maxPerApt);
             foundCount++;
         }
     }
     if (foundCount == 0) {
-        printf("На %d этаже квартир нет.\n", floor);
+        printf("На %llu этаже квартир нет.\n", floor);
     }
 }
 
-void printApartmentsByType(const ApartmentList& aptList, int rooms) {
-    printf("\n--- Список квартир: %d-комнатные ---\n", rooms);
-    int foundCount = 0;
-    for (int i = 0; i < aptList.count; i++) {
+void printApartmentsByType(const ApartmentList& aptList, size_t rooms) {
+    printf("\n--- Список квартир: %llu-комнатные ---\n", rooms);
+    size_t foundCount = 0;
+    for (size_t i = 0; i < aptList.count; i++) {
         if (aptList.data[i].roomsCount == rooms) {
-            printf("Квартира №%d | Этаж: %d | Жильцов: %d/%d\n",
+            printf("Квартира №%llu | Этаж: %llu | Жильцов: %llu/%d\n",
                 aptList.data[i].number, aptList.data[i].floor,
                 aptList.data[i].residentCount, maxPerApt);
             foundCount++;
         }
     }
     if (foundCount == 0) {
-        printf("Квартир с таким количеством комнат (%d) не найдено.\n", rooms);
+        printf("Квартир с таким количеством комнат (%llu) не найдено.\n", rooms);
     }
 }
 #pragma endregion aparManagement
