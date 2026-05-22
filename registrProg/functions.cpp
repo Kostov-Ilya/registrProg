@@ -95,7 +95,7 @@ void addResident(ResidentList& resList) {
         return;
     }
     printf("Введите ФИО жильца: ");
-    if (scanf_s(" %[^\n]", newRes.fullName, (size_t)sizeof(newRes.fullName)) != 1) {
+    if (scanf_s(" %[^\n]", newRes.fullName, (unsigned int)sizeof(newRes.fullName)) != 1) {
         printf("Ошибка ввода ФИО!\n");
         return;
     }
