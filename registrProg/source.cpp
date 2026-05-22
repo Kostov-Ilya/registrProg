@@ -61,7 +61,7 @@ int main() {
                 scanf_s("%llu", &rId);
                 printf("Номер квартиры: ");
                 scanf_s("%llu", &aNum);
-                linkResidentToApartment(aptList, aNum, rId);
+                linkResidentToApartment(aptList, resList, aNum, rId);
                 break;
             case 6:
                 printf("Номер квартиры: ");
