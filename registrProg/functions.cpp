@@ -137,7 +137,7 @@ void printAllResidents(const ResidentList& resList) {
 void addApartment(ApartmentList& aptList) {
     if (aptList.count >= aptList.capacity) {
         growApartments(aptList.data, &aptList.capacity);
-        printf("[i] Массив квартир расширен до %llu.\n", aptList.capacity);
+        printf("Массив квартир расширен до %llu.\n", aptList.capacity);
     }
     Apartment newApt;
     printf("Введите номер квартиры: ");
