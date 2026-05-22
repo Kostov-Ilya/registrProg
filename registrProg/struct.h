@@ -1,7 +1,7 @@
 #pragma once
 #pragma region const
 #define nameBuffer 128
-#define maxPerApt 10
+#define maxPerApt 3
 #define startCap 10
 #pragma endregion const
 
